@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const db = require('./database');
 
 const app = express();
@@ -10,6 +11,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve static files from frontend/dist (for production)
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // API Routes
 
@@ -236,6 +240,48 @@ app.get('/api/work-logs/period/:year/:month', (req, res) => {
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Puantaj API is running' });
+});
+
+// Serve frontend for all non-API routes (SPA fallback)
+app.get('*', (req, res) => {
+  const indexPath = path.join(__dirname, '../frontend/dist/index.html');
+  const fs = require('fs');
+
+  // Check if the built frontend exists
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    // If no built frontend, show a helpful message
+    res.send(`
+      <html>
+        <head><title>Employee Puantaj System</title></head>
+        <body>
+          <h1>Employee Puantaj System API</h1>
+          <p>The API is running successfully on port ${PORT}.</p>
+          <h2>To use this application:</h2>
+          <ul>
+            <li><strong>Development:</strong> Run <code>npm run dev</code> from the root directory to start both backend and frontend servers.</li>
+            <li><strong>Production:</strong> Build the frontend first with <code>cd frontend && npm run build</code></li>
+          </ul>
+          <h2>Available API Endpoints:</h2>
+          <ul>
+            <li>GET <a href="/api/health">/api/health</a> - Health check</li>
+            <li>GET /api/employees - Get all employees</li>
+            <li>GET /api/employees/:id - Get employee by ID</li>
+            <li>POST /api/employees - Add new employee</li>
+            <li>PUT /api/employees/:id - Update employee</li>
+            <li>DELETE /api/employees/:id - Delete employee</li>
+            <li>GET /api/work-logs - Get all work logs</li>
+            <li>GET /api/work-logs/employee/:employeeId - Get work logs for employee</li>
+            <li>GET /api/work-logs/period/:year/:month - Get work logs by period</li>
+            <li>POST /api/work-logs - Add work log</li>
+            <li>PUT /api/work-logs/:id - Update work log</li>
+            <li>DELETE /api/work-logs/:id - Delete work log</li>
+          </ul>
+        </body>
+      </html>
+    `);
+  }
 });
 
 app.listen(PORT, () => {
