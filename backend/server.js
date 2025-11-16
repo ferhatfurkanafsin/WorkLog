@@ -60,16 +60,16 @@ app.get('/api/employees/:id', (req, res) => {
 
 // Add new employee
 app.post('/api/employees', (req, res) => {
-  const { name, surname, position, department, phone, email } = req.body;
+  const { name, surname, position, department, phone, email, monthly_salary } = req.body;
 
   if (!name || !surname) {
     res.status(400).json({ error: 'Name and surname are required' });
     return;
   }
 
-  const query = `INSERT INTO employees (name, surname, position, department, phone, email) VALUES (?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO employees (name, surname, position, department, phone, email, monthly_salary) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-  db.run(query, [name, surname, position, department, phone, email], function(err) {
+  db.run(query, [name, surname, position, department, phone, email, monthly_salary || 0], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -80,15 +80,15 @@ app.post('/api/employees', (req, res) => {
 
 // Update employee
 app.put('/api/employees/:id', (req, res) => {
-  const { name, surname, position, department, phone, email } = req.body;
+  const { name, surname, position, department, phone, email, monthly_salary } = req.body;
 
   const query = `
     UPDATE employees
-    SET name = ?, surname = ?, position = ?, department = ?, phone = ?, email = ?
+    SET name = ?, surname = ?, position = ?, department = ?, phone = ?, email = ?, monthly_salary = ?
     WHERE id = ?
   `;
 
-  db.run(query, [name, surname, position, department, phone, email, req.params.id], function(err) {
+  db.run(query, [name, surname, position, department, phone, email, monthly_salary || 0, req.params.id], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -155,19 +155,29 @@ app.get('/api/work-logs', (req, res) => {
 
 // Add work log entry
 app.post('/api/work-logs', (req, res) => {
-  const { employee_id, month, year, days_worked, payment_amount, notes } = req.body;
+  const {
+    employee_id, month, year, days_worked, payment_amount, notes,
+    hakedis_ucret, avans, kalan_avans, icra_odeme, bankaya_odenecek, elden_verilecek
+  } = req.body;
 
-  if (!employee_id || !month || !year || !days_worked || !payment_amount) {
-    res.status(400).json({ error: 'Employee ID, month, year, days worked, and payment amount are required' });
+  if (!employee_id || !month || !year || days_worked === undefined) {
+    res.status(400).json({ error: 'Employee ID, month, year, and days worked are required' });
     return;
   }
 
   const query = `
-    INSERT INTO work_logs (employee_id, month, year, days_worked, payment_amount, notes)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO work_logs (
+      employee_id, month, year, days_worked, payment_amount, notes,
+      hakedis_ucret, avans, kalan_avans, icra_odeme, bankaya_odenecek, elden_verilecek
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(query, [employee_id, month, year, days_worked, payment_amount, notes], function(err) {
+  db.run(query, [
+    employee_id, month, year, days_worked, payment_amount || 0, notes,
+    hakedis_ucret || 0, avans || 0, kalan_avans || 0, icra_odeme || 0,
+    bankaya_odenecek || 0, elden_verilecek || 0
+  ], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -178,15 +188,26 @@ app.post('/api/work-logs', (req, res) => {
 
 // Update work log entry
 app.put('/api/work-logs/:id', (req, res) => {
-  const { month, year, days_worked, payment_amount, notes } = req.body;
+  const {
+    month, year, days_worked, payment_amount, notes,
+    hakedis_ucret, avans, kalan_avans, icra_odeme, bankaya_odenecek, elden_verilecek
+  } = req.body;
 
   const query = `
     UPDATE work_logs
-    SET month = ?, year = ?, days_worked = ?, payment_amount = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+    SET month = ?, year = ?, days_worked = ?, payment_amount = ?, notes = ?,
+        hakedis_ucret = ?, avans = ?, kalan_avans = ?, icra_odeme = ?,
+        bankaya_odenecek = ?, elden_verilecek = ?,
+        updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `;
 
-  db.run(query, [month, year, days_worked, payment_amount, notes, req.params.id], function(err) {
+  db.run(query, [
+    month, year, days_worked, payment_amount || 0, notes,
+    hakedis_ucret || 0, avans || 0, kalan_avans || 0, icra_odeme || 0,
+    bankaya_odenecek || 0, elden_verilecek || 0,
+    req.params.id
+  ], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;

@@ -293,3 +293,190 @@ header p {
   font-size: 2em;
   font-weight: bold;
 }
+
+.stat-card.highlight {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stat-card .text-warning {
+  color: #ffeaa7;
+}
+
+/* Form row for side-by-side inputs */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #999;
+  font-size: 0.85em;
+}
+
+/* Calculation summary styles */
+.calculation-summary {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border-left: 4px solid #4caf50;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.calculation-summary h3 {
+  color: #2e7d32;
+  font-size: 1.1em;
+  margin-bottom: 15px;
+}
+
+.calc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.calc-item:last-child {
+  border-bottom: none;
+}
+
+.calc-item span {
+  color: #555;
+}
+
+.calc-item strong {
+  color: #2e7d32;
+  font-size: 1.1em;
+}
+
+.calc-total {
+  margin-top: 10px;
+  padding-top: 15px !important;
+  border-top: 2px solid #4caf50 !important;
+  border-bottom: none !important;
+}
+
+.calc-total strong {
+  font-size: 1.3em;
+}
+
+.calc-formula {
+  font-size: 0.85em;
+  color: #666;
+  font-style: italic;
+  margin-top: 5px;
+  padding-left: 10px;
+}
+
+/* Table enhancements */
+.table-container {
+  overflow-x: auto;
+}
+
+.work-logs-table .amount {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+}
+
+.work-logs-table .notes {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-logs-table .text-warning {
+  color: #f39c12;
+}
+
+.work-logs-table .highlight {
+  background-color: #fff3cd;
+  font-weight: 700;
+}
+
+.work-logs-table th {
+  white-space: nowrap;
+  font-size: 0.9em;
+}
+
+/* Employee info enhancements */
+.selected-employee-info strong {
+  color: #667eea;
+}
+
+/* Salary editing styles */
+.salary-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.salary-edit {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.salary-input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 2px solid #667eea;
+  border-radius: 4px;
+}
+
+.btn-edit-salary,
+.btn-save-salary,
+.btn-cancel-salary {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 8px;
+  font-size: 16px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-edit-salary {
+  color: #667eea;
+}
+
+.btn-edit-salary:hover {
+  background-color: #e8ebff;
+}
+
+.btn-save-salary {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-save-salary:hover {
+  background-color: #45a049;
+}
+
+.btn-cancel-salary {
+  background-color: #f44336;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-cancel-salary:hover {
+  background-color: #da190b;
+}
+
+.text-muted {
+  color: #999;
+  font-style: italic;
+}
