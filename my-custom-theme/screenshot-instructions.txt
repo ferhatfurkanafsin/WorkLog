@@ -1,0 +1,67 @@
+SCREENSHOT GENERATION INSTRUCTIONS
+==================================
+
+The theme requires a screenshot.png file (880x660 pixels) to be displayed in WordPress admin.
+
+OPTION 1: Create with ImageMagick (if available)
+------------------------------------------------
+
+Run this command in the theme directory:
+
+convert -size 880x660 xc:#f8fafc \
+  -gravity north -pointsize 48 -fill '#2563eb' -annotate +0+100 'My Custom Theme' \
+  -gravity center -pointsize 24 -fill '#64748b' -annotate +0+0 'Native Drag & Drop Page Builder' \
+  -gravity center -pointsize 18 -fill '#1e293b' -annotate +0+50 'No plugins required' \
+  -gravity south -pointsize 14 -fill '#94a3b8' -annotate +0+50 'Build beautiful pages with ease' \
+  screenshot.png
+
+
+OPTION 2: Create with online tools
+-----------------------------------
+
+1. Go to https://www.canva.com or https://www.photopea.com
+2. Create a new project with dimensions: 880 x 660 pixels
+3. Use these design elements:
+   - Background color: #f8fafc (light blue-gray)
+   - Main title: "My Custom Theme" (48px, color #2563eb)
+   - Subtitle: "Native Drag & Drop Page Builder" (24px, color #64748b)
+   - Feature text: "No plugins required" (18px, color #1e293b)
+   - Bottom text: "Build beautiful pages with ease" (14px, color #94a3b8)
+4. Export as PNG named "screenshot.png"
+5. Place in the theme root directory
+
+
+OPTION 3: Use a website screenshot
+-----------------------------------
+
+1. Build a demo page using the page builder
+2. Take a screenshot of the page (full browser width)
+3. Crop/resize to 880 x 660 pixels
+4. Save as "screenshot.png" in theme root
+
+
+OPTION 4: Create manually with any image editor
+------------------------------------------------
+
+Dimensions: 880 x 660 pixels
+Format: PNG
+
+Design suggestions:
+- Show the theme's page builder interface
+- Display example blocks in action
+- Use the theme's primary colors
+- Keep it simple and professional
+- Ensure text is readable at small sizes
+
+Save as: screenshot.png
+Location: my-custom-theme/screenshot.png
+
+
+NOTE: The screenshot is required for the theme to display properly in:
+- WordPress admin > Appearance > Themes
+- Theme directory listings
+- Theme previews
+
+Once created, verify the screenshot appears by:
+1. Going to Appearance > Themes in WordPress admin
+2. Your theme should display the screenshot as a preview thumbnail
