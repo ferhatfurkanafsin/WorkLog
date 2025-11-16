@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const crypto = require('crypto');
 const db = require('./database');
 
 const app = express();
@@ -10,6 +11,92 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Helper function to hash passwords
+const hashPassword = (password) => {
+  return crypto.createHash('sha256').update(password).digest('hex');
+};
+
+// Authentication Routes
+
+// Login endpoint
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    res.status(400).json({ error: 'Username and password are required' });
+    return;
+  }
+
+  const hashedPassword = hashPassword(password);
+
+  db.get(
+    "SELECT id, username, role, full_name FROM users WHERE username = ? AND password = ?",
+    [username, hashedPassword],
+    (err, user) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+
+      if (!user) {
+        res.status(401).json({ error: 'Invalid username or password' });
+        return;
+      }
+
+      // Generate a simple session token
+      const sessionToken = crypto.randomBytes(32).toString('hex');
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          fullName: user.full_name
+        },
+        sessionToken
+      });
+    }
+  );
+});
+
+// Get current user (session validation)
+app.get('/api/auth/me', (req, res) => {
+  // In a real application, you would validate the session token from headers
+  // For this simple implementation, we'll accept a userId in query params
+  const userId = req.query.userId;
+
+  if (!userId) {
+    res.status(401).json({ error: 'Not authenticated' });
+    return;
+  }
+
+  db.get(
+    "SELECT id, username, role, full_name FROM users WHERE id = ?",
+    [userId],
+    (err, user) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+
+      if (!user) {
+        res.status(401).json({ error: 'User not found' });
+        return;
+      }
+
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          fullName: user.full_name
+        }
+      });
+    }
+  );
+});
 
 // API Routes
 

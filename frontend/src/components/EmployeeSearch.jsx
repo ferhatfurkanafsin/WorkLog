@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 function EmployeeSearch({ onSelectEmployee }) {
+  const { hasPermission } = useAuth()
   const [employees, setEmployees] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedId, setSelectedId] = useState(null)
@@ -20,7 +22,7 @@ function EmployeeSearch({ onSelectEmployee }) {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees')
+      const response = await fetch('http://localhost:3000/api/employees')
       const data = await response.json()
       setEmployees(data.employees)
       setLoading(false)
@@ -32,7 +34,7 @@ function EmployeeSearch({ onSelectEmployee }) {
 
   const searchEmployees = async () => {
     try {
-      const response = await fetch(`/api/employees/search?q=${encodeURIComponent(searchTerm)}`)
+      const response = await fetch(`http://localhost:3000/api/employees/search?q=${encodeURIComponent(searchTerm)}`)
       const data = await response.json()
       setEmployees(data.employees)
     } catch (error) {
