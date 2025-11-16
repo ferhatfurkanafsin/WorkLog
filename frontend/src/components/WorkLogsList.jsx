@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import dbManager from '../utils/indexedDB'
 
 function WorkLogsList({ selectedEmployee, refresh }) {
   const [workLogs, setWorkLogs] = useState([])
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ totalDays: 0, totalPayment: 0 })
+  const [isOffline, setIsOffline] = useState(false)
 
   useEffect(() => {
     if (selectedEmployee) {
@@ -20,8 +22,19 @@ function WorkLogsList({ selectedEmployee, refresh }) {
       const data = await response.json()
       setWorkLogs(data.workLogs)
       calculateStats(data.workLogs)
+      setIsOffline(false)
     } catch (error) {
       console.error('Error fetching work logs:', error)
+
+      // Try to load from IndexedDB cache
+      try {
+        const cachedLogs = await dbManager.getEmployeeWorkLogs(selectedEmployee.id)
+        setWorkLogs(cachedLogs)
+        calculateStats(cachedLogs)
+        setIsOffline(true)
+      } catch (dbError) {
+        console.error('Error loading from cache:', dbError)
+      }
     } finally {
       setLoading(false)
     }
@@ -34,8 +47,22 @@ function WorkLogsList({ selectedEmployee, refresh }) {
       const data = await response.json()
       setWorkLogs(data.workLogs)
       calculateStats(data.workLogs)
+      setIsOffline(false)
+
+      // Cache work logs in IndexedDB
+      await dbManager.syncWorkLogs(data.workLogs)
     } catch (error) {
       console.error('Error fetching work logs:', error)
+
+      // Try to load from IndexedDB cache
+      try {
+        const cachedLogs = await dbManager.getAll('workLogs')
+        setWorkLogs(cachedLogs)
+        calculateStats(cachedLogs)
+        setIsOffline(true)
+      } catch (dbError) {
+        console.error('Error loading from cache:', dbError)
+      }
     } finally {
       setLoading(false)
     }
@@ -70,6 +97,7 @@ function WorkLogsList({ selectedEmployee, refresh }) {
           ? `${selectedEmployee.name} ${selectedEmployee.surname} - Puantaj Kayıtları`
           : 'Tüm Puantaj Kayıtları'
         }
+        {isOffline && <span className="offline-badge"> (Çevrimdışı)</span>}
       </h2>
 
       {workLogs.length > 0 && (

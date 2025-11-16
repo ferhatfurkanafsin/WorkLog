@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import EmployeeSearch from './components/EmployeeSearch'
 import WorkLogForm from './components/WorkLogForm'
 import WorkLogsList from './components/WorkLogsList'
+import DataManagement from './components/DataManagement'
 import './App.css'
 
 function App() {
@@ -35,6 +36,8 @@ function App() {
         selectedEmployee={selectedEmployee}
         refresh={refreshLogs}
       />
+
+      <DataManagement />
     </div>
   )
 }
