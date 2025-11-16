@@ -1,0 +1,228 @@
+.language-selector {
+  position: relative;
+  z-index: 100;
+}
+
+.language-selector.header {
+  margin-left: auto;
+}
+
+.language-selector.footer {
+  display: inline-block;
+}
+
+/* Dropdown Style */
+.language-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.language-dropdown-btn:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.current-language-flag {
+  font-size: 1.2rem;
+}
+
+.current-language-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.dropdown-arrow {
+  font-size: 0.7rem;
+  color: #999;
+  transition: transform 0.2s ease;
+}
+
+.language-selector.dropdown.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.language-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.language-option:hover {
+  background: #f5f5f5;
+}
+
+.language-option.active {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.language-flag {
+  font-size: 1.2rem;
+}
+
+.language-name {
+  flex: 1;
+  font-weight: 500;
+  color: #333;
+}
+
+.check-icon {
+  color: #667eea;
+  font-weight: bold;
+}
+
+/* Flags Style */
+.language-selector.flags {
+  display: inline-block;
+}
+
+.language-flags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.flag-button {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flag-button:hover {
+  transform: scale(1.1);
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.flag-button.active {
+  border-color: #667eea;
+  border-width: 3px;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Minimal Style */
+.language-selector.minimal {
+  display: inline-block;
+}
+
+.minimal-language-btn {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.minimal-language-btn:hover {
+  background: #f5f5f5;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.language-selector.minimal .language-dropdown {
+  min-width: 100px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  padding: 0.5rem;
+}
+
+.language-selector.minimal .language-option {
+  padding: 0.5rem;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .language-dropdown {
+    right: auto;
+    left: 0;
+  }
+
+  .current-language-name {
+    display: none;
+  }
+
+  .language-flags {
+    max-width: 200px;
+  }
+
+  .flag-button {
+    width: 35px;
+    height: 35px;
+    font-size: 1.3rem;
+  }
+}
+
+/* Scrollbar for language dropdown */
+.language-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.language-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.language-dropdown::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.language-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

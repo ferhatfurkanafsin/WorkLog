@@ -1,0 +1,196 @@
+.social-media-follow {
+  padding: 2rem;
+  text-align: center;
+}
+
+.social-media-title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.social-media-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-media-follow.vertical .social-media-links {
+  flex-direction: column;
+}
+
+/* Social Link Styles */
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  position: relative;
+}
+
+.social-link i {
+  font-size: 1.5rem;
+}
+
+.social-platform-name {
+  display: none;
+  margin-left: 0.5rem;
+  font-weight: 600;
+}
+
+/* Size Variations */
+.social-media-follow.small .social-link {
+  width: 35px;
+  height: 35px;
+}
+
+.social-media-follow.small .social-link i {
+  font-size: 1.2rem;
+}
+
+.social-media-follow.medium .social-link {
+  width: 50px;
+  height: 50px;
+}
+
+.social-media-follow.medium .social-link i {
+  font-size: 1.5rem;
+}
+
+.social-media-follow.large .social-link {
+  width: 65px;
+  height: 65px;
+}
+
+.social-media-follow.large .social-link i {
+  font-size: 2rem;
+}
+
+/* Style Variations - Filled */
+.social-media-follow.filled .social-link.instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: #fff;
+}
+
+.social-media-follow.filled .social-link.twitter {
+  background: #1DA1F2;
+  color: #fff;
+}
+
+.social-media-follow.filled .social-link.telegram {
+  background: #0088cc;
+  color: #fff;
+}
+
+.social-media-follow.filled .social-link.discord {
+  background: #5865F2;
+  color: #fff;
+}
+
+.social-media-follow.filled .social-link.facebook {
+  background: #1877F2;
+  color: #fff;
+}
+
+.social-media-follow.filled .social-link.youtube {
+  background: #FF0000;
+  color: #fff;
+}
+
+.social-media-follow.filled .social-link.linkedin {
+  background: #0077B5;
+  color: #fff;
+}
+
+.social-media-follow.filled .social-link.tiktok {
+  background: #000;
+  color: #fff;
+}
+
+/* Style Variations - Outlined */
+.social-media-follow.outlined .social-link {
+  background: transparent;
+  border: 2px solid;
+}
+
+.social-media-follow.outlined .social-link.instagram {
+  border-color: #E1306C;
+  color: #E1306C;
+}
+
+.social-media-follow.outlined .social-link.twitter {
+  border-color: #1DA1F2;
+  color: #1DA1F2;
+}
+
+.social-media-follow.outlined .social-link.telegram {
+  border-color: #0088cc;
+  color: #0088cc;
+}
+
+.social-media-follow.outlined .social-link.discord {
+  border-color: #5865F2;
+  color: #5865F2;
+}
+
+.social-media-follow.outlined .social-link.facebook {
+  border-color: #1877F2;
+  color: #1877F2;
+}
+
+/* Style Variations - Minimal */
+.social-media-follow.minimal .social-link {
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.social-media-follow.minimal .social-link {
+  color: #666;
+}
+
+.social-media-follow.minimal .social-link:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* Hover Effects */
+.social-media-follow.filled .social-link:hover,
+.social-media-follow.outlined .social-link:hover {
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Show platform names on large screens with vertical layout */
+.social-media-follow.vertical .social-link {
+  width: auto;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  gap: 0.5rem;
+}
+
+.social-media-follow.vertical .social-platform-name {
+  display: inline;
+}
+
+/* Loading state */
+.social-media-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .social-media-links {
+    flex-wrap: wrap;
+  }
+
+  .social-media-follow.large .social-link {
+    width: 55px;
+    height: 55px;
+  }
+}
