@@ -233,6 +233,145 @@ app.get('/api/work-logs/period/:year/:month', (req, res) => {
   });
 });
 
+// Dashboard statistics
+app.get('/api/dashboard/stats', (req, res) => {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+
+  // Get month name in Turkish
+  const monthNames = {
+    1: 'Ocak', 2: 'Şubat', 3: 'Mart', 4: 'Nisan', 5: 'Mayıs', 6: 'Haziran',
+    7: 'Temmuz', 8: 'Ağustos', 9: 'Eylül', 10: 'Ekim', 11: 'Kasım', 12: 'Aralık'
+  };
+  const currentMonthName = monthNames[currentMonth];
+
+  const stats = {};
+
+  // 1. Total employees count
+  db.get("SELECT COUNT(*) as count FROM employees", (err, row) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    stats.totalEmployees = row.count;
+
+    // 2. Current month stats (payroll and average worked days)
+    const currentMonthQuery = `
+      SELECT
+        COALESCE(SUM(payment_amount), 0) as totalPayroll,
+        COALESCE(AVG(days_worked), 0) as avgWorkedDays,
+        COUNT(*) as employeeCount
+      FROM work_logs
+      WHERE year = ? AND month = ?
+    `;
+
+    db.get(currentMonthQuery, [currentYear, currentMonthName], (err, row) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      stats.currentMonth = {
+        totalPayroll: row.totalPayroll,
+        avgWorkedDays: row.avgWorkedDays,
+        employeeCount: row.employeeCount
+      };
+
+      // 3. Recent activity (last 5 entries)
+      const recentActivityQuery = `
+        SELECT wl.*, e.name, e.surname, e.position
+        FROM work_logs wl
+        JOIN employees e ON wl.employee_id = e.id
+        ORDER BY wl.created_at DESC
+        LIMIT 5
+      `;
+
+      db.all(recentActivityQuery, (err, rows) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        stats.recentActivity = rows;
+
+        // 4. Month-over-month comparison (last 6 months)
+        const monthComparison = [];
+        let monthsProcessed = 0;
+
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date(currentYear, currentMonth - 1 - i, 1);
+          const year = date.getFullYear();
+          const month = date.getMonth() + 1;
+          const monthName = monthNames[month];
+
+          const monthQuery = `
+            SELECT
+              COALESCE(SUM(payment_amount), 0) as totalPayroll,
+              COALESCE(AVG(days_worked), 0) as avgDays,
+              COUNT(*) as count
+            FROM work_logs
+            WHERE year = ? AND month = ?
+          `;
+
+          db.get(monthQuery, [year, monthName], (err, row) => {
+            if (err) {
+              res.status(500).json({ error: err.message });
+              return;
+            }
+
+            monthComparison.push({
+              year: year,
+              month: monthName,
+              monthNumber: month,
+              totalPayroll: row.totalPayroll,
+              avgDays: row.avgDays,
+              count: row.count
+            });
+
+            monthsProcessed++;
+
+            if (monthsProcessed === 6) {
+              // Sort by year and month
+              monthComparison.sort((a, b) => {
+                if (a.year !== b.year) return a.year - b.year;
+                return a.monthNumber - b.monthNumber;
+              });
+              stats.monthComparison = monthComparison;
+
+              // 5. Top 5 employees by worked days (current month)
+              const topEmployeesQuery = `
+                SELECT
+                  e.id,
+                  e.name,
+                  e.surname,
+                  e.position,
+                  e.department,
+                  wl.days_worked,
+                  wl.payment_amount
+                FROM work_logs wl
+                JOIN employees e ON wl.employee_id = e.id
+                WHERE wl.year = ? AND wl.month = ?
+                ORDER BY wl.days_worked DESC
+                LIMIT 5
+              `;
+
+              db.all(topEmployeesQuery, [currentYear, currentMonthName], (err, rows) => {
+                if (err) {
+                  res.status(500).json({ error: err.message });
+                  return;
+                }
+                stats.topEmployees = rows;
+
+                // Return all stats
+                res.json({ stats });
+              });
+            }
+          });
+        }
+      });
+    });
+  });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Puantaj API is running' });
