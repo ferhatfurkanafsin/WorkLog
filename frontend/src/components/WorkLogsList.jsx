@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function WorkLogsList({ selectedEmployee, refresh }) {
   const [workLogs, setWorkLogs] = useState([])
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ totalDays: 0, totalPayment: 0 })
+  const [touchStart, setTouchStart] = useState(null)
+  const [touchEnd, setTouchEnd] = useState(null)
+  const tableRef = useRef(null)
 
   useEffect(() => {
     if (selectedEmployee) {
@@ -54,6 +57,35 @@ function WorkLogsList({ selectedEmployee, refresh }) {
     }).format(amount)
   }
 
+  // Swipe gesture handlers
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    if (isLeftSwipe) {
+      // Swipe left - could navigate to next month/period
+      console.log('Swiped left - next period')
+    }
+    if (isRightSwipe) {
+      // Swipe right - could navigate to previous month/period
+      console.log('Swiped right - previous period')
+    }
+  }
+
   if (loading) {
     return (
       <div className="card work-logs-section">
@@ -64,7 +96,13 @@ function WorkLogsList({ selectedEmployee, refresh }) {
   }
 
   return (
-    <div className="card work-logs-section">
+    <div
+      className="card work-logs-section"
+      ref={tableRef}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <h2>
         {selectedEmployee
           ? `${selectedEmployee.name} ${selectedEmployee.surname} - Puantaj Kayıtları`
@@ -99,34 +137,36 @@ function WorkLogsList({ selectedEmployee, refresh }) {
           }
         </div>
       ) : (
-        <table className="work-logs-table">
-          <thead>
-            <tr>
-              {!selectedEmployee && <th>Personel</th>}
-              <th>Ay</th>
-              <th>Yıl</th>
-              <th>Çalışılan Gün</th>
-              <th>Ödeme Tutarı</th>
-              <th>Notlar</th>
-              <th>Kayıt Tarihi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {workLogs.map(log => (
-              <tr key={log.id}>
-                {!selectedEmployee && (
-                  <td><strong>{log.name} {log.surname}</strong></td>
-                )}
-                <td>{log.month}</td>
-                <td>{log.year}</td>
-                <td>{log.days_worked}</td>
-                <td>{formatCurrency(log.payment_amount)}</td>
-                <td>{log.notes || '-'}</td>
-                <td>{new Date(log.created_at).toLocaleDateString('tr-TR')}</td>
+        <div className="table-wrapper">
+          <table className="work-logs-table">
+            <thead>
+              <tr>
+                {!selectedEmployee && <th>Personel</th>}
+                <th>Ay</th>
+                <th>Yıl</th>
+                <th>Çalışılan Gün</th>
+                <th>Ödeme Tutarı</th>
+                <th>Notlar</th>
+                <th>Kayıt Tarihi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {workLogs.map(log => (
+                <tr key={log.id}>
+                  {!selectedEmployee && (
+                    <td><strong>{log.name} {log.surname}</strong></td>
+                  )}
+                  <td>{log.month}</td>
+                  <td>{log.year}</td>
+                  <td>{log.days_worked}</td>
+                  <td>{formatCurrency(log.payment_amount)}</td>
+                  <td>{log.notes || '-'}</td>
+                  <td>{new Date(log.created_at).toLocaleDateString('tr-TR')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )
