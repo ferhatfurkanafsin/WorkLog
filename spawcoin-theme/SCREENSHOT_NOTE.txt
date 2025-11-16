@@ -1,0 +1,34 @@
+SCREENSHOT REQUIREMENTS FOR WORDPRESS THEME
+==========================================
+
+WordPress themes require a screenshot.png file for the theme preview in the admin panel.
+
+REQUIREMENTS:
+- File name: screenshot.png
+- Recommended size: 1200 x 900 pixels
+- File format: PNG
+- Location: Root of the theme directory (spawcoin-theme/)
+
+WHAT TO INCLUDE:
+Create a screenshot that shows:
+1. The homepage hero section with the Spawcoin branding
+2. A glimpse of the roadmap or team section
+3. Modern, professional cryptocurrency/memecoin aesthetic
+4. Gold (#FFD700) and dark blue (#1a1a2e) color scheme
+
+HOW TO CREATE:
+1. After installing the theme in WordPress
+2. Customize the homepage with your content
+3. Take a full-page screenshot of the homepage
+4. Crop to 1200x900 pixels
+5. Save as screenshot.png in the theme root directory
+
+ALTERNATIVE:
+You can create a promotional graphic using:
+- Canva (free templates available)
+- Photoshop
+- GIMP (free alternative)
+- Figma
+
+Until you add a screenshot.png file, WordPress will show a blank theme preview.
+This does not affect theme functionality.
