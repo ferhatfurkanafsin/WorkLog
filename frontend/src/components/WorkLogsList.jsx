@@ -3,7 +3,15 @@ import { useState, useEffect } from 'react'
 function WorkLogsList({ selectedEmployee, refresh }) {
   const [workLogs, setWorkLogs] = useState([])
   const [loading, setLoading] = useState(false)
-  const [stats, setStats] = useState({ totalDays: 0, totalPayment: 0 })
+  const [stats, setStats] = useState({
+    totalDays: 0,
+    totalHakedis: 0,
+    totalAvans: 0,
+    totalIcraOdeme: 0,
+    totalNetPayment: 0,
+    totalBankPayment: 0,
+    totalCashPayment: 0
+  })
 
   useEffect(() => {
     if (selectedEmployee) {
@@ -42,9 +50,23 @@ function WorkLogsList({ selectedEmployee, refresh }) {
   }
 
   const calculateStats = (logs) => {
-    const totalDays = logs.reduce((sum, log) => sum + parseFloat(log.days_worked), 0)
-    const totalPayment = logs.reduce((sum, log) => sum + parseFloat(log.payment_amount), 0)
-    setStats({ totalDays, totalPayment })
+    const totalDays = logs.reduce((sum, log) => sum + parseFloat(log.days_worked || 0), 0)
+    const totalHakedis = logs.reduce((sum, log) => sum + parseFloat(log.hakedis_ucret || 0), 0)
+    const totalAvans = logs.reduce((sum, log) => sum + parseFloat(log.avans || 0), 0)
+    const totalIcraOdeme = logs.reduce((sum, log) => sum + parseFloat(log.icra_odeme || 0), 0)
+    const totalNetPayment = logs.reduce((sum, log) => sum + parseFloat(log.payment_amount || 0), 0)
+    const totalBankPayment = logs.reduce((sum, log) => sum + parseFloat(log.bankaya_odenecek || 0), 0)
+    const totalCashPayment = logs.reduce((sum, log) => sum + parseFloat(log.elden_verilecek || 0), 0)
+
+    setStats({
+      totalDays,
+      totalHakedis,
+      totalAvans,
+      totalIcraOdeme,
+      totalNetPayment,
+      totalBankPayment,
+      totalCashPayment
+    })
   }
 
   const formatCurrency = (amount) => {
@@ -79,15 +101,29 @@ function WorkLogsList({ selectedEmployee, refresh }) {
             <p>{stats.totalDays.toFixed(1)}</p>
           </div>
           <div className="stat-card">
-            <h4>Toplam Ödeme</h4>
-            <p>{formatCurrency(stats.totalPayment)}</p>
+            <h4>Toplam Hakediş</h4>
+            <p>{formatCurrency(stats.totalHakedis)}</p>
           </div>
-          {stats.totalDays > 0 && (
-            <div className="stat-card">
-              <h4>Ortalama Günlük Ücret</h4>
-              <p>{formatCurrency(stats.totalPayment / stats.totalDays)}</p>
-            </div>
-          )}
+          <div className="stat-card">
+            <h4>Toplam Avans</h4>
+            <p className="text-warning">{formatCurrency(stats.totalAvans)}</p>
+          </div>
+          <div className="stat-card">
+            <h4>Toplam İcra Ödeme</h4>
+            <p className="text-warning">{formatCurrency(stats.totalIcraOdeme)}</p>
+          </div>
+          <div className="stat-card highlight">
+            <h4>Toplam Net Ödeme</h4>
+            <p>{formatCurrency(stats.totalNetPayment)}</p>
+          </div>
+          <div className="stat-card">
+            <h4>Banka Ödemeleri</h4>
+            <p>{formatCurrency(stats.totalBankPayment)}</p>
+          </div>
+          <div className="stat-card">
+            <h4>Nakit Ödemeler</h4>
+            <p>{formatCurrency(stats.totalCashPayment)}</p>
+          </div>
         </div>
       )}
 
@@ -99,34 +135,46 @@ function WorkLogsList({ selectedEmployee, refresh }) {
           }
         </div>
       ) : (
-        <table className="work-logs-table">
-          <thead>
-            <tr>
-              {!selectedEmployee && <th>Personel</th>}
-              <th>Ay</th>
-              <th>Yıl</th>
-              <th>Çalışılan Gün</th>
-              <th>Ödeme Tutarı</th>
-              <th>Notlar</th>
-              <th>Kayıt Tarihi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {workLogs.map(log => (
-              <tr key={log.id}>
-                {!selectedEmployee && (
-                  <td><strong>{log.name} {log.surname}</strong></td>
-                )}
-                <td>{log.month}</td>
-                <td>{log.year}</td>
-                <td>{log.days_worked}</td>
-                <td>{formatCurrency(log.payment_amount)}</td>
-                <td>{log.notes || '-'}</td>
-                <td>{new Date(log.created_at).toLocaleDateString('tr-TR')}</td>
+        <div className="table-container">
+          <table className="work-logs-table">
+            <thead>
+              <tr>
+                {!selectedEmployee && <th>Personel</th>}
+                <th>Ay</th>
+                <th>Yıl</th>
+                <th>Çalışılan Gün</th>
+                <th>Hakediş Ücret</th>
+                <th>Avans</th>
+                <th>İcra Ödeme</th>
+                <th>Net Ödeme</th>
+                <th>Banka</th>
+                <th>Nakit</th>
+                <th>Kalan Avans</th>
+                <th>Notlar</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {workLogs.map(log => (
+                <tr key={log.id}>
+                  {!selectedEmployee && (
+                    <td><strong>{log.name} {log.surname}</strong></td>
+                  )}
+                  <td>{log.month}</td>
+                  <td>{log.year}</td>
+                  <td>{log.days_worked}</td>
+                  <td className="amount">{formatCurrency(log.hakedis_ucret || 0)}</td>
+                  <td className="amount text-warning">{formatCurrency(log.avans || 0)}</td>
+                  <td className="amount text-warning">{formatCurrency(log.icra_odeme || 0)}</td>
+                  <td className="amount highlight">{formatCurrency(log.payment_amount || 0)}</td>
+                  <td className="amount">{formatCurrency(log.bankaya_odenecek || 0)}</td>
+                  <td className="amount">{formatCurrency(log.elden_verilecek || 0)}</td>
+                  <td className="amount">{formatCurrency(log.kalan_avans || 0)}</td>
+                  <td className="notes">{log.notes || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )
