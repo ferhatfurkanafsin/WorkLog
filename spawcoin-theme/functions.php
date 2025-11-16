@@ -40,8 +40,33 @@ function spawcoin_setup() {
     set_post_thumbnail_size(800, 600, true);
     add_image_size('spawcoin-blog-thumb', 400, 300, true);
     add_image_size('spawcoin-team-thumb', 300, 300, true);
+
+    // Add Gutenberg wide alignment support
+    add_theme_support('align-wide');
+
+    // Add editor styles support
+    add_theme_support('editor-styles');
+
+    // Add responsive embeds support
+    add_theme_support('responsive-embeds');
+
+    // Add support for Block Editor features
+    add_theme_support('wp-block-styles');
 }
 add_action('after_setup_theme', 'spawcoin_setup');
+
+/**
+ * Add Elementor Support
+ */
+function spawcoin_elementor_support() {
+    // Add Elementor support for custom post types
+    update_option('elementor_cpt_support', array('page', 'post', 'team_member'));
+
+    // Disable Elementor default colors and fonts
+    update_option('elementor_disable_color_schemes', 'yes');
+    update_option('elementor_disable_typography_schemes', 'yes');
+}
+add_action('after_setup_theme', 'spawcoin_elementor_support');
 
 /**
  * Enqueue Styles and Scripts
@@ -66,6 +91,33 @@ function spawcoin_enqueue_assets() {
     // Main stylesheet
     wp_enqueue_style('spawcoin-style', get_stylesheet_uri(), array(), '1.0.0');
 
+    // Web3.js library for wallet integration
+    wp_enqueue_script(
+        'web3',
+        'https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js',
+        array(),
+        '1.8.0',
+        true
+    );
+
+    // Ethers.js (alternative to Web3.js, more modern)
+    wp_enqueue_script(
+        'ethers',
+        'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js',
+        array(),
+        '5.7.2',
+        true
+    );
+
+    // Wallet Connect JavaScript
+    wp_enqueue_script(
+        'spawcoin-web3',
+        get_template_directory_uri() . '/js/web3-wallet.js',
+        array('jquery', 'web3', 'ethers'),
+        '1.0.0',
+        true
+    );
+
     // Main JavaScript
     wp_enqueue_script(
         'spawcoin-script',
@@ -76,9 +128,13 @@ function spawcoin_enqueue_assets() {
     );
 
     // Pass data to JavaScript
-    wp_localize_script('spawcoin-script', 'spawcoinData', array(
+    wp_localize_script('spawcoin-web3', 'spawcoinConfig', array(
         'ajaxUrl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('spawcoin-nonce')
+        'nonce' => wp_create_nonce('spawcoin-nonce'),
+        'contractAddress' => get_option('spawcoin_contract_address', ''),
+        'chainId' => get_option('spawcoin_chain_id', '1'), // 1 = Ethereum Mainnet
+        'tokenSymbol' => 'SPAWN',
+        'tokenDecimals' => 18,
     ));
 }
 add_action('wp_enqueue_scripts', 'spawcoin_enqueue_assets');
@@ -607,6 +663,73 @@ function spawcoin_customize_register($wp_customize) {
         'section' => 'spawcoin_hero',
         'type' => 'url',
     ));
+
+    // Web3 Settings Section
+    $wp_customize->add_section('spawcoin_web3', array(
+        'title' => __('Web3 & Token Settings', 'spawcoin'),
+        'priority' => 40,
+        'description' => __('Configure your token contract and blockchain settings', 'spawcoin'),
+    ));
+
+    $wp_customize->add_setting('spawcoin_contract_address', array(
+        'default' => '',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+    $wp_customize->add_control('spawcoin_contract_address', array(
+        'label' => __('Token Contract Address', 'spawcoin'),
+        'section' => 'spawcoin_web3',
+        'type' => 'text',
+        'description' => __('Enter your Spawcoin token contract address (0x...)', 'spawcoin'),
+    ));
+
+    $wp_customize->add_setting('spawcoin_chain_id', array(
+        'default' => '1',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+    $wp_customize->add_control('spawcoin_chain_id', array(
+        'label' => __('Blockchain Network', 'spawcoin'),
+        'section' => 'spawcoin_web3',
+        'type' => 'select',
+        'choices' => array(
+            '1' => 'Ethereum Mainnet',
+            '56' => 'BNB Smart Chain',
+            '137' => 'Polygon',
+            '42161' => 'Arbitrum',
+            '10' => 'Optimism',
+            '8453' => 'Base',
+        ),
+    ));
+
+    $wp_customize->add_setting('spawcoin_buy_link', array(
+        'default' => '',
+        'sanitize_callback' => 'esc_url_raw',
+    ));
+    $wp_customize->add_control('spawcoin_buy_link', array(
+        'label' => __('Buy Token Link (Uniswap/PancakeSwap)', 'spawcoin'),
+        'section' => 'spawcoin_web3',
+        'type' => 'url',
+        'description' => __('DEX link where users can buy your token', 'spawcoin'),
+    ));
+
+    $wp_customize->add_setting('spawcoin_airdrop_enabled', array(
+        'default' => false,
+        'sanitize_callback' => 'wp_validate_boolean',
+    ));
+    $wp_customize->add_control('spawcoin_airdrop_enabled', array(
+        'label' => __('Enable Airdrop', 'spawcoin'),
+        'section' => 'spawcoin_web3',
+        'type' => 'checkbox',
+    ));
+
+    $wp_customize->add_setting('spawcoin_airdrop_amount', array(
+        'default' => '1000',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+    $wp_customize->add_control('spawcoin_airdrop_amount', array(
+        'label' => __('Airdrop Amount (per user)', 'spawcoin'),
+        'section' => 'spawcoin_web3',
+        'type' => 'text',
+    ));
 }
 add_action('customize_register', 'spawcoin_customize_register');
 
@@ -636,3 +759,335 @@ function spawcoin_body_classes($classes) {
     return $classes;
 }
 add_filter('body_class', 'spawcoin_body_classes');
+
+/**
+ * AJAX Handler: Claim Airdrop
+ */
+function spawcoin_claim_airdrop() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'spawcoin-nonce')) {
+        wp_send_json_error(array('message' => 'Security check failed'));
+        return;
+    }
+
+    $wallet_address = sanitize_text_field($_POST['wallet_address']);
+
+    // Validate wallet address format
+    if (!preg_match('/^0x[a-fA-F0-9]{40}$/', $wallet_address)) {
+        wp_send_json_error(array('message' => 'Invalid wallet address'));
+        return;
+    }
+
+    // Check if airdrop is enabled
+    if (!get_theme_mod('spawcoin_airdrop_enabled', false)) {
+        wp_send_json_error(array('message' => 'Airdrop is not currently active'));
+        return;
+    }
+
+    // Check if wallet has already claimed
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'spawcoin_airdrops';
+
+    // Create table if it doesn't exist
+    $charset_collate = $wpdb->get_charset_collate();
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        wallet_address varchar(42) NOT NULL,
+        claim_date datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        amount varchar(50) NOT NULL,
+        status varchar(20) DEFAULT 'pending' NOT NULL,
+        PRIMARY KEY  (id),
+        UNIQUE KEY wallet_address (wallet_address)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+
+    // Check for existing claim
+    $existing_claim = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM $table_name WHERE wallet_address = %s",
+        $wallet_address
+    ));
+
+    if ($existing_claim) {
+        wp_send_json_error(array('message' => 'This wallet has already claimed the airdrop'));
+        return;
+    }
+
+    // Insert new claim
+    $airdrop_amount = get_theme_mod('spawcoin_airdrop_amount', '1000');
+
+    $inserted = $wpdb->insert(
+        $table_name,
+        array(
+            'wallet_address' => $wallet_address,
+            'amount' => $airdrop_amount,
+            'status' => 'pending'
+        ),
+        array('%s', '%s', '%s')
+    );
+
+    if ($inserted) {
+        // Send notification email to admin (optional)
+        $admin_email = get_option('admin_email');
+        $subject = 'New Airdrop Claim - Spawcoin';
+        $message = sprintf(
+            "New airdrop claim received:\n\nWallet Address: %s\nAmount: %s SPAWN\nTime: %s",
+            $wallet_address,
+            number_format($airdrop_amount),
+            current_time('mysql')
+        );
+
+        wp_mail($admin_email, $subject, $message);
+
+        wp_send_json_success(array(
+            'message' => 'Airdrop claimed successfully! Tokens will be sent to your wallet within 24-48 hours.',
+            'wallet' => $wallet_address,
+            'amount' => $airdrop_amount
+        ));
+    } else {
+        wp_send_json_error(array('message' => 'Failed to process claim. Please try again.'));
+    }
+}
+add_action('wp_ajax_spawcoin_claim_airdrop', 'spawcoin_claim_airdrop');
+add_action('wp_ajax_nopriv_spawcoin_claim_airdrop', 'spawcoin_claim_airdrop');
+
+/**
+ * Shortcode: Wallet Connect Button
+ * Usage: [spawcoin_wallet_connect]
+ */
+function spawcoin_wallet_connect_shortcode($atts) {
+    $atts = shortcode_atts(array(
+        'text' => 'Connect Wallet',
+        'class' => '',
+    ), $atts);
+
+    ob_start();
+    ?>
+    <div class="wallet-connect-section">
+        <div class="wallet-status">
+            <span class="wallet-address"></span>
+            <button class="connect-wallet-btn <?php echo esc_attr($atts['class']); ?>">
+                <i class="fas fa-wallet"></i> <?php echo esc_html($atts['text']); ?>
+            </button>
+            <button class="disconnect-wallet-btn">
+                <i class="fas fa-sign-out-alt"></i> Disconnect
+            </button>
+        </div>
+
+        <div class="wallet-connected-content">
+            <div class="wallet-info">
+                <div class="token-balance-display">
+                    <span>Your SPAWN Balance:</span>
+                    <span class="token-balance">0</span>
+                </div>
+                <div class="token-balance-display">
+                    <span>Connected Network:</span>
+                    <span id="network-name">-</span>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; text-align: center;">
+                <button class="add-token-btn">
+                    <i class="fas fa-plus-circle"></i> Add SPAWN to Wallet
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('spawcoin_wallet_connect', 'spawcoin_wallet_connect_shortcode');
+
+/**
+ * Shortcode: Buy Token Button
+ * Usage: [spawcoin_buy_button]
+ */
+function spawcoin_buy_button_shortcode($atts) {
+    $atts = shortcode_atts(array(
+        'text' => 'Buy SPAWN',
+        'class' => '',
+    ), $atts);
+
+    $buy_link = get_theme_mod('spawcoin_buy_link', '#');
+
+    ob_start();
+    ?>
+    <a href="<?php echo esc_url($buy_link); ?>"
+       class="buy-token-btn <?php echo esc_attr($atts['class']); ?>"
+       target="_blank"
+       rel="noopener noreferrer">
+        <i class="fas fa-shopping-cart"></i> <?php echo esc_html($atts['text']); ?>
+    </a>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('spawcoin_buy_button', 'spawcoin_buy_button_shortcode');
+
+/**
+ * Shortcode: Token Purchase Widget
+ * Usage: [spawcoin_purchase_widget]
+ */
+function spawcoin_purchase_widget_shortcode() {
+    $contract_address = get_theme_mod('spawcoin_contract_address', '');
+    $buy_link = get_theme_mod('spawcoin_buy_link', '#');
+
+    ob_start();
+    ?>
+    <div class="token-purchase-widget">
+        <h3><i class="fas fa-coins"></i> Buy SPAWN Tokens</h3>
+
+        <div class="wallet-disconnected-content">
+            <p style="text-align: center; margin-bottom: 1rem;">Connect your wallet to purchase tokens</p>
+            <div style="text-align: center;">
+                <button class="connect-wallet-btn">
+                    <i class="fas fa-wallet"></i> Connect Wallet
+                </button>
+            </div>
+        </div>
+
+        <div class="wallet-connected-content">
+            <div class="purchase-input-group">
+                <label>Amount (ETH/BNB)</label>
+                <input type="number" id="purchase-amount" placeholder="0.1" step="0.01" min="0">
+            </div>
+
+            <div class="token-price-info">
+                <span>You will receive (approx):</span>
+                <span id="token-amount">0 SPAWN</span>
+            </div>
+
+            <div class="purchase-actions">
+                <a href="<?php echo esc_url($buy_link); ?>"
+                   class="buy-token-btn"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    <i class="fas fa-shopping-cart"></i> Buy on DEX
+                </a>
+            </div>
+
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem; text-align: center;">
+                Powered by Uniswap/PancakeSwap
+            </p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('spawcoin_purchase_widget', 'spawcoin_purchase_widget_shortcode');
+
+/**
+ * Shortcode: Token Balance Display
+ * Usage: [spawcoin_balance]
+ */
+function spawcoin_balance_shortcode() {
+    ob_start();
+    ?>
+    <div class="wallet-connected-content" style="display: inline-block;">
+        <span class="token-balance">0</span> SPAWN
+    </div>
+    <div class="wallet-disconnected-content" style="display: inline-block;">
+        <button class="connect-wallet-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+            Connect to View Balance
+        </button>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('spawcoin_balance', 'spawcoin_balance_shortcode');
+
+/**
+ * Add Admin Menu for Airdrop Management
+ */
+function spawcoin_add_admin_menu() {
+    add_menu_page(
+        'Spawcoin Airdrops',
+        'Airdrops',
+        'manage_options',
+        'spawcoin-airdrops',
+        'spawcoin_airdrops_page',
+        'dashicons-tickets-alt',
+        30
+    );
+}
+add_action('admin_menu', 'spawcoin_add_admin_menu');
+
+/**
+ * Airdrop Management Page
+ */
+function spawcoin_airdrops_page() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'spawcoin_airdrops';
+
+    // Get all claims
+    $claims = $wpdb->get_results("SELECT * FROM $table_name ORDER BY claim_date DESC");
+
+    ?>
+    <div class="wrap">
+        <h1>Airdrop Claims Management</h1>
+
+        <?php if (isset($_GET['action']) && $_GET['action'] == 'export') :
+            // Export to CSV
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="spawcoin-airdrops-' . date('Y-m-d') . '.csv"');
+            $output = fopen('php://output', 'w');
+            fputcsv($output, array('ID', 'Wallet Address', 'Amount', 'Status', 'Claim Date'));
+            foreach ($claims as $claim) {
+                fputcsv($output, array(
+                    $claim->id,
+                    $claim->wallet_address,
+                    $claim->amount,
+                    $claim->status,
+                    $claim->claim_date
+                ));
+            }
+            fclose($output);
+            exit;
+        endif; ?>
+
+        <p>
+            <a href="?page=spawcoin-airdrops&action=export" class="button button-primary">
+                <span class="dashicons dashicons-download"></span> Export to CSV
+            </a>
+        </p>
+
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Wallet Address</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Claim Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($claims) :
+                    foreach ($claims as $claim) : ?>
+                        <tr>
+                            <td><?php echo esc_html($claim->id); ?></td>
+                            <td><code><?php echo esc_html($claim->wallet_address); ?></code></td>
+                            <td><?php echo esc_html(number_format($claim->amount)); ?> SPAWN</td>
+                            <td>
+                                <span class="status-<?php echo esc_attr($claim->status); ?>">
+                                    <?php echo esc_html(ucfirst($claim->status)); ?>
+                                </span>
+                            </td>
+                            <td><?php echo esc_html($claim->claim_date); ?></td>
+                        </tr>
+                    <?php endforeach;
+                else : ?>
+                    <tr>
+                        <td colspan="5">No airdrop claims yet.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
+        <style>
+            .status-pending { color: #ff9800; font-weight: 600; }
+            .status-completed { color: #4caf50; font-weight: 600; }
+            .status-failed { color: #f44336; font-weight: 600; }
+        </style>
+    </div>
+    <?php
+}
