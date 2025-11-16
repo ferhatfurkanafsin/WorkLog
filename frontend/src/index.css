@@ -293,3 +293,202 @@ header p {
   font-size: 2em;
   font-weight: bold;
 }
+
+/* Payment Tracking Styles */
+
+.payment-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.payment-section h3 {
+  color: #667eea;
+  font-size: 1.2em;
+  margin-bottom: 15px;
+}
+
+.checkbox-group {
+  margin-bottom: 15px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+}
+
+.checkbox-label span {
+  font-weight: 600;
+  color: #555;
+  font-size: 16px;
+}
+
+/* Work Logs Header */
+
+.work-logs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.work-logs-header h2 {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.payment-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.payment-filter label {
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+
+.payment-filter select {
+  padding: 8px 15px;
+  font-size: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.payment-filter select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Row Color Coding */
+
+.row-paid {
+  background-color: #f0fff4 !important;
+  border-left: 4px solid #48bb78;
+}
+
+.row-unpaid {
+  background-color: #fff5f5 !important;
+  border-left: 4px solid #f56565;
+}
+
+.row-paid:hover {
+  background-color: #e6ffed !important;
+}
+
+.row-unpaid:hover {
+  background-color: #ffe5e5 !important;
+}
+
+/* Payment Badges */
+
+.payment-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-paid {
+  background-color: #48bb78;
+  color: white;
+}
+
+.badge-unpaid {
+  background-color: #f56565;
+  color: white;
+}
+
+/* Notification Buttons */
+
+.notification-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 13px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.btn-email {
+  background-color: #4299e1;
+  color: white;
+}
+
+.btn-email:hover {
+  background-color: #3182ce;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.4);
+}
+
+.btn-sms {
+  background-color: #48bb78;
+  color: white;
+}
+
+.btn-sms:hover {
+  background-color: #38a169;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.4);
+}
+
+/* Responsive Adjustments */
+
+@media (max-width: 768px) {
+  .work-logs-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .payment-filter {
+    width: 100%;
+  }
+
+  .payment-filter select {
+    flex: 1;
+  }
+
+  .work-logs-table {
+    font-size: 0.9em;
+  }
+
+  .work-logs-table th,
+  .work-logs-table td {
+    padding: 8px;
+  }
+
+  .notification-buttons {
+    flex-direction: column;
+  }
+
+  .btn-small {
+    width: 100%;
+  }
+}

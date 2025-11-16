@@ -30,11 +30,33 @@ db.serialize(() => {
       days_worked REAL NOT NULL,
       payment_amount REAL NOT NULL,
       notes TEXT,
+      is_paid INTEGER DEFAULT 0,
+      payment_date TEXT,
+      payment_method TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (employee_id) REFERENCES employees (id)
     )
   `);
+
+  // Add payment tracking columns if they don't exist (for existing databases)
+  db.run(`ALTER TABLE work_logs ADD COLUMN is_paid INTEGER DEFAULT 0`, (err) => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Error adding is_paid column:', err.message);
+    }
+  });
+
+  db.run(`ALTER TABLE work_logs ADD COLUMN payment_date TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Error adding payment_date column:', err.message);
+    }
+  });
+
+  db.run(`ALTER TABLE work_logs ADD COLUMN payment_method TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Error adding payment_method column:', err.message);
+    }
+  });
 
   // Insert some sample employees for testing
   db.get("SELECT COUNT(*) as count FROM employees", (err, row) => {

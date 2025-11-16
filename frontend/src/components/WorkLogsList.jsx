@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react'
 
 function WorkLogsList({ selectedEmployee, refresh }) {
   const [workLogs, setWorkLogs] = useState([])
+  const [filteredWorkLogs, setFilteredWorkLogs] = useState([])
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ totalDays: 0, totalPayment: 0 })
+  const [paymentFilter, setPaymentFilter] = useState('all')
+  const [notificationMessage, setNotificationMessage] = useState({ type: '', text: '' })
 
   useEffect(() => {
     if (selectedEmployee) {
@@ -12,6 +15,23 @@ function WorkLogsList({ selectedEmployee, refresh }) {
       fetchAllWorkLogs()
     }
   }, [selectedEmployee, refresh])
+
+  useEffect(() => {
+    applyFilter()
+  }, [workLogs, paymentFilter])
+
+  const applyFilter = () => {
+    let filtered = [...workLogs]
+
+    if (paymentFilter === 'paid') {
+      filtered = filtered.filter(log => log.is_paid === 1)
+    } else if (paymentFilter === 'unpaid') {
+      filtered = filtered.filter(log => log.is_paid === 0 || !log.is_paid)
+    }
+
+    setFilteredWorkLogs(filtered)
+    calculateStats(filtered)
+  }
 
   const fetchWorkLogs = async () => {
     setLoading(true)
@@ -54,6 +74,46 @@ function WorkLogsList({ selectedEmployee, refresh }) {
     }).format(amount)
   }
 
+  const sendNotification = async (log, type) => {
+    try {
+      const response = await fetch(`/api/work-logs/${log.id}/send-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          notificationType: type,
+          employee: {
+            name: log.name,
+            surname: log.surname,
+            email: selectedEmployee?.email || 'not-provided@example.com',
+            phone: selectedEmployee?.phone || 'Not provided'
+          }
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setNotificationMessage({
+          type: 'success',
+          text: data.message
+        })
+        setTimeout(() => setNotificationMessage({ type: '', text: '' }), 5000)
+      } else {
+        setNotificationMessage({
+          type: 'error',
+          text: data.error || 'Bildirim gönderilemedi'
+        })
+      }
+    } catch (error) {
+      setNotificationMessage({
+        type: 'error',
+        text: 'Bağlantı hatası: ' + error.message
+      })
+    }
+  }
+
   if (loading) {
     return (
       <div className="card work-logs-section">
@@ -65,14 +125,31 @@ function WorkLogsList({ selectedEmployee, refresh }) {
 
   return (
     <div className="card work-logs-section">
-      <h2>
-        {selectedEmployee
-          ? `${selectedEmployee.name} ${selectedEmployee.surname} - Puantaj Kayıtları`
-          : 'Tüm Puantaj Kayıtları'
-        }
-      </h2>
+      <div className="work-logs-header">
+        <h2>
+          {selectedEmployee
+            ? `${selectedEmployee.name} ${selectedEmployee.surname} - Puantaj Kayıtları`
+            : 'Tüm Puantaj Kayıtları'
+          }
+        </h2>
 
-      {workLogs.length > 0 && (
+        <div className="payment-filter">
+          <label>Ödeme Durumu: </label>
+          <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}>
+            <option value="all">Tümü</option>
+            <option value="paid">Ödenenler</option>
+            <option value="unpaid">Ödenmeyenler</option>
+          </select>
+        </div>
+      </div>
+
+      {notificationMessage.text && (
+        <div className={`alert alert-${notificationMessage.type}`}>
+          {notificationMessage.text}
+        </div>
+      )}
+
+      {filteredWorkLogs.length > 0 && (
         <div className="stats-grid">
           <div className="stat-card">
             <h4>Toplam Çalışılan Gün</h4>
@@ -91,11 +168,13 @@ function WorkLogsList({ selectedEmployee, refresh }) {
         </div>
       )}
 
-      {workLogs.length === 0 ? (
+      {filteredWorkLogs.length === 0 ? (
         <div className="no-data">
-          {selectedEmployee
-            ? 'Bu personel için henüz puantaj kaydı bulunmuyor'
-            : 'Henüz puantaj kaydı bulunmuyor'
+          {paymentFilter === 'all'
+            ? (selectedEmployee
+              ? 'Bu personel için henüz puantaj kaydı bulunmuyor'
+              : 'Henüz puantaj kaydı bulunmuyor')
+            : `${paymentFilter === 'paid' ? 'Ödenmiş' : 'Ödenmemiş'} kayıt bulunmuyor`
           }
         </div>
       ) : (
@@ -107,13 +186,16 @@ function WorkLogsList({ selectedEmployee, refresh }) {
               <th>Yıl</th>
               <th>Çalışılan Gün</th>
               <th>Ödeme Tutarı</th>
+              <th>Ödeme Durumu</th>
+              <th>Ödeme Tarihi</th>
+              <th>Ödeme Yöntemi</th>
               <th>Notlar</th>
-              <th>Kayıt Tarihi</th>
+              <th>İşlemler</th>
             </tr>
           </thead>
           <tbody>
-            {workLogs.map(log => (
-              <tr key={log.id}>
+            {filteredWorkLogs.map(log => (
+              <tr key={log.id} className={log.is_paid ? 'row-paid' : 'row-unpaid'}>
                 {!selectedEmployee && (
                   <td><strong>{log.name} {log.surname}</strong></td>
                 )}
@@ -121,8 +203,39 @@ function WorkLogsList({ selectedEmployee, refresh }) {
                 <td>{log.year}</td>
                 <td>{log.days_worked}</td>
                 <td>{formatCurrency(log.payment_amount)}</td>
+                <td>
+                  <span className={`payment-badge ${log.is_paid ? 'badge-paid' : 'badge-unpaid'}`}>
+                    {log.is_paid ? '✓ Ödendi' : '✗ Ödenmedi'}
+                  </span>
+                </td>
+                <td>
+                  {log.payment_date
+                    ? new Date(log.payment_date).toLocaleDateString('tr-TR')
+                    : '-'
+                  }
+                </td>
+                <td>{log.payment_method || '-'}</td>
                 <td>{log.notes || '-'}</td>
-                <td>{new Date(log.created_at).toLocaleDateString('tr-TR')}</td>
+                <td>
+                  {log.is_paid && (
+                    <div className="notification-buttons">
+                      <button
+                        className="btn-small btn-email"
+                        onClick={() => sendNotification(log, 'email')}
+                        title="E-posta gönder"
+                      >
+                        📧 E-posta
+                      </button>
+                      <button
+                        className="btn-small btn-sms"
+                        onClick={() => sendNotification(log, 'sms')}
+                        title="SMS gönder"
+                      >
+                        📱 SMS
+                      </button>
+                    </div>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

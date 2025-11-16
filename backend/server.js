@@ -155,7 +155,7 @@ app.get('/api/work-logs', (req, res) => {
 
 // Add work log entry
 app.post('/api/work-logs', (req, res) => {
-  const { employee_id, month, year, days_worked, payment_amount, notes } = req.body;
+  const { employee_id, month, year, days_worked, payment_amount, notes, is_paid, payment_date, payment_method } = req.body;
 
   if (!employee_id || !month || !year || !days_worked || !payment_amount) {
     res.status(400).json({ error: 'Employee ID, month, year, days worked, and payment amount are required' });
@@ -163,11 +163,11 @@ app.post('/api/work-logs', (req, res) => {
   }
 
   const query = `
-    INSERT INTO work_logs (employee_id, month, year, days_worked, payment_amount, notes)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO work_logs (employee_id, month, year, days_worked, payment_amount, notes, is_paid, payment_date, payment_method)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.run(query, [employee_id, month, year, days_worked, payment_amount, notes], function(err) {
+  db.run(query, [employee_id, month, year, days_worked, payment_amount, notes, is_paid || 0, payment_date || null, payment_method || null], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -178,15 +178,15 @@ app.post('/api/work-logs', (req, res) => {
 
 // Update work log entry
 app.put('/api/work-logs/:id', (req, res) => {
-  const { month, year, days_worked, payment_amount, notes } = req.body;
+  const { month, year, days_worked, payment_amount, notes, is_paid, payment_date, payment_method } = req.body;
 
   const query = `
     UPDATE work_logs
-    SET month = ?, year = ?, days_worked = ?, payment_amount = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+    SET month = ?, year = ?, days_worked = ?, payment_amount = ?, notes = ?, is_paid = ?, payment_date = ?, payment_method = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `;
 
-  db.run(query, [month, year, days_worked, payment_amount, notes, req.params.id], function(err) {
+  db.run(query, [month, year, days_worked, payment_amount, notes, is_paid, payment_date, payment_method, req.params.id], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
@@ -230,6 +230,44 @@ app.get('/api/work-logs/period/:year/:month', (req, res) => {
       return;
     }
     res.json({ workLogs: rows });
+  });
+});
+
+// Send payment notification (simulated)
+app.post('/api/work-logs/:id/send-notification', (req, res) => {
+  const { notificationType, employee } = req.body;
+
+  // Get work log details
+  db.get("SELECT * FROM work_logs WHERE id = ?", [req.params.id], (err, log) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    if (!log) {
+      res.status(404).json({ error: 'Work log not found' });
+      return;
+    }
+
+    // Simulate notification sending
+    console.log(`=== PAYMENT NOTIFICATION SIMULATION ===`);
+    console.log(`Type: ${notificationType}`);
+    console.log(`Employee: ${employee.name} ${employee.surname}`);
+    console.log(`Email: ${employee.email || 'Not provided'}`);
+    console.log(`Phone: ${employee.phone || 'Not provided'}`);
+    console.log(`Payment Amount: ${log.payment_amount} TL`);
+    console.log(`Period: ${log.month} ${log.year}`);
+    console.log(`Payment Method: ${log.payment_method || 'Not specified'}`);
+    console.log(`Payment Date: ${log.payment_date || 'Not specified'}`);
+    console.log(`======================================`);
+
+    res.json({
+      success: true,
+      message: `${notificationType === 'email' ? 'E-posta' : 'SMS'} bildirimi başarıyla gönderildi (simülasyon)`,
+      details: {
+        recipient: employee.name + ' ' + employee.surname,
+        contact: notificationType === 'email' ? employee.email : employee.phone
+      }
+    });
   });
 });
 
