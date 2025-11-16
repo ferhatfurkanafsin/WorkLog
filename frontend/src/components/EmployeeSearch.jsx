@@ -55,15 +55,16 @@ function EmployeeSearch({ onSelectEmployee }) {
   }
 
   return (
-    <div className="card">
-      <h2>Personel Ara</h2>
-      <input
-        type="text"
-        className="search-box"
-        placeholder="İsim, soyisim, pozisyon veya departman ara..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+    <div className="card employee-search-card">
+      <div className="sticky-search-wrapper">
+        <input
+          type="text"
+          className="search-box sticky-search"
+          placeholder="İsim, soyisim, pozisyon veya departman ara..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
       <div className="employee-list">
         {employees.length === 0 ? (
