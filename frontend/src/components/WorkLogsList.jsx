@@ -4,6 +4,8 @@ function WorkLogsList({ selectedEmployee, refresh }) {
   const [workLogs, setWorkLogs] = useState([])
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({ totalDays: 0, totalPayment: 0 })
+  const [deleteModal, setDeleteModal] = useState({ show: false, log: null })
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (selectedEmployee) {
@@ -52,6 +54,42 @@ function WorkLogsList({ selectedEmployee, refresh }) {
       style: 'currency',
       currency: 'TRY'
     }).format(amount)
+  }
+
+  const handleDeleteClick = (log) => {
+    setDeleteModal({ show: true, log })
+  }
+
+  const handleCancelDelete = () => {
+    setDeleteModal({ show: false, log: null })
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModal.log) return
+
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/work-logs/${deleteModal.log.id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Refresh the list
+        if (selectedEmployee) {
+          fetchWorkLogs()
+        } else {
+          fetchAllWorkLogs()
+        }
+        setDeleteModal({ show: false, log: null })
+      } else {
+        const data = await response.json()
+        alert('Silme hatası: ' + (data.error || 'Bir hata oluştu'))
+      }
+    } catch (error) {
+      alert('Bağlantı hatası: ' + error.message)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   if (loading) {
@@ -109,6 +147,7 @@ function WorkLogsList({ selectedEmployee, refresh }) {
               <th>Ödeme Tutarı</th>
               <th>Notlar</th>
               <th>Kayıt Tarihi</th>
+              <th className="action-column">İşlem</th>
             </tr>
           </thead>
           <tbody>
@@ -123,10 +162,50 @@ function WorkLogsList({ selectedEmployee, refresh }) {
                 <td>{formatCurrency(log.payment_amount)}</td>
                 <td>{log.notes || '-'}</td>
                 <td>{new Date(log.created_at).toLocaleDateString('tr-TR')}</td>
+                <td className="action-column">
+                  <button
+                    className="btn btn-danger btn-small"
+                    onClick={() => handleDeleteClick(log)}
+                  >
+                    Sil
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.show && (
+        <div className="modal-overlay" onClick={handleCancelDelete}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Kaydı Sil</h3>
+            <p>
+              <strong>{deleteModal.log?.name} {deleteModal.log?.surname}</strong> personeline ait{' '}
+              <strong>{deleteModal.log?.month} {deleteModal.log?.year}</strong> ayı puantaj kaydını silmek istediğinizden emin misiniz?
+            </p>
+            <p style={{ color: '#dc3545', marginTop: '10px' }}>
+              Bu işlem geri alınamaz!
+            </p>
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={handleCancelDelete}
+                disabled={deleting}
+              >
+                İptal
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Siliniyor...' : 'Evet, Sil'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -116,6 +116,30 @@ app.delete('/api/employees/:id', (req, res) => {
   });
 });
 
+// Check for duplicate work log entry
+app.get('/api/work-logs/check-duplicate', (req, res) => {
+  const { employee_id, month, year } = req.query;
+
+  if (!employee_id || !month || !year) {
+    res.status(400).json({ error: 'Employee ID, month, and year are required' });
+    return;
+  }
+
+  const query = `
+    SELECT COUNT(*) as count
+    FROM work_logs
+    WHERE employee_id = ? AND month = ? AND year = ?
+  `;
+
+  db.get(query, [employee_id, month, year], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ exists: row.count > 0 });
+  });
+});
+
 // Get work logs for an employee
 app.get('/api/work-logs/employee/:employeeId', (req, res) => {
   const query = `
