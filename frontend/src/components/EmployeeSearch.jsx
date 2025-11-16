@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react'
+import dbManager from '../utils/indexedDB'
 
 function EmployeeSearch({ onSelectEmployee }) {
   const [employees, setEmployees] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isOffline, setIsOffline] = useState(false)
 
   useEffect(() => {
+    // Initialize IndexedDB
+    dbManager.init().catch(console.error)
     fetchEmployees()
   }, [])
 
@@ -20,12 +24,28 @@ function EmployeeSearch({ onSelectEmployee }) {
 
   const fetchEmployees = async () => {
     try {
+      setLoading(true)
       const response = await fetch('/api/employees')
       const data = await response.json()
       setEmployees(data.employees)
+      setIsOffline(false)
+
+      // Cache employees in IndexedDB
+      await dbManager.syncEmployees(data.employees)
       setLoading(false)
     } catch (error) {
       console.error('Error fetching employees:', error)
+
+      // Try to load from IndexedDB cache
+      try {
+        const cachedEmployees = await dbManager.getAll('employees')
+        if (cachedEmployees.length > 0) {
+          setEmployees(cachedEmployees)
+          setIsOffline(true)
+        }
+      } catch (dbError) {
+        console.error('Error loading from cache:', dbError)
+      }
       setLoading(false)
     }
   }
@@ -35,8 +55,18 @@ function EmployeeSearch({ onSelectEmployee }) {
       const response = await fetch(`/api/employees/search?q=${encodeURIComponent(searchTerm)}`)
       const data = await response.json()
       setEmployees(data.employees)
+      setIsOffline(false)
     } catch (error) {
       console.error('Error searching employees:', error)
+
+      // Search in IndexedDB cache
+      try {
+        const results = await dbManager.searchEmployees(searchTerm)
+        setEmployees(results)
+        setIsOffline(true)
+      } catch (dbError) {
+        console.error('Error searching cache:', dbError)
+      }
     }
   }
 
@@ -56,7 +86,10 @@ function EmployeeSearch({ onSelectEmployee }) {
 
   return (
     <div className="card">
-      <h2>Personel Ara</h2>
+      <h2>
+        Personel Ara
+        {isOffline && <span className="offline-badge"> (Çevrimdışı)</span>}
+      </h2>
       <input
         type="text"
         className="search-box"
