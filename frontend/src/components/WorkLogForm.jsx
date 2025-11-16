@@ -11,6 +11,16 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
   const [message, setMessage] = useState({ type: '', text: '' })
   const [submitting, setSubmitting] = useState(false)
 
+  // Helper function to get days in a month
+  const getDaysInMonth = (monthName, year) => {
+    const months = {
+      'Ocak': 0, 'Şubat': 1, 'Mart': 2, 'Nisan': 3, 'Mayıs': 4, 'Haziran': 5,
+      'Temmuz': 6, 'Ağustos': 7, 'Eylül': 8, 'Ekim': 9, 'Kasım': 10, 'Aralık': 11
+    }
+    const monthIndex = months[monthName]
+    return new Date(year, monthIndex + 1, 0).getDate()
+  }
+
   useEffect(() => {
     // Set current month
     const currentMonth = new Date().toLocaleString('tr-TR', { month: 'long' })
@@ -28,14 +38,58 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Validation 1: Check if employee is selected
     if (!selectedEmployee) {
-      setMessage({ type: 'error', text: 'Lütfen önce bir personel seçin' })
+      setMessage({ type: 'error', text: 'HATA: Lütfen önce bir personel seçin!' })
       return
     }
 
+    // Validation 2: Check if required fields are filled
     if (!formData.days_worked || !formData.payment_amount) {
-      setMessage({ type: 'error', text: 'Lütfen tüm gerekli alanları doldurun' })
+      setMessage({ type: 'error', text: 'HATA: Lütfen tüm gerekli alanları doldurun!' })
       return
+    }
+
+    // Validation 3: Validate payment amount (no negative numbers)
+    const paymentAmount = parseFloat(formData.payment_amount)
+    if (paymentAmount < 0) {
+      setMessage({ type: 'error', text: 'HATA: Ödeme tutarı negatif olamaz!' })
+      return
+    }
+
+    // Validation 4: Validate days worked (must be positive)
+    const daysWorked = parseFloat(formData.days_worked)
+    if (daysWorked < 0) {
+      setMessage({ type: 'error', text: 'HATA: Çalışılan gün sayısı negatif olamaz!' })
+      return
+    }
+
+    // Validation 5: Validate days worked against days in month
+    const daysInMonth = getDaysInMonth(formData.month, formData.year)
+    if (daysWorked > daysInMonth) {
+      setMessage({
+        type: 'error',
+        text: `HATA: ${formData.month} ${formData.year} ayında ${daysInMonth} gün bulunmaktadır. Çalışılan gün sayısı ${daysInMonth} günden fazla olamaz!`
+      })
+      return
+    }
+
+    // Validation 6: Check for duplicate entries
+    try {
+      const checkResponse = await fetch(
+        `/api/work-logs/check-duplicate?employee_id=${selectedEmployee.id}&month=${formData.month}&year=${formData.year}`
+      )
+      const checkData = await checkResponse.json()
+
+      if (checkData.exists) {
+        setMessage({
+          type: 'error',
+          text: `HATA: Bu personel için ${formData.month} ${formData.year} ayına ait kayıt zaten mevcut!`
+        })
+        return
+      }
+    } catch (error) {
+      console.error('Error checking duplicate:', error)
     }
 
     setSubmitting(true)
@@ -66,10 +120,10 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
         })
         onWorkLogAdded()
       } else {
-        setMessage({ type: 'error', text: data.error || 'Bir hata oluştu' })
+        setMessage({ type: 'error', text: 'HATA: ' + (data.error || 'Bir hata oluştu') })
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Bağlantı hatası: ' + error.message })
+      setMessage({ type: 'error', text: 'HATA: Bağlantı hatası - ' + error.message })
     } finally {
       setSubmitting(false)
     }

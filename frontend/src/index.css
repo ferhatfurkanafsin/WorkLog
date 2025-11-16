@@ -203,9 +203,11 @@ header p {
 }
 
 .alert-error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: #ff4444;
+  color: #ffffff;
+  border: 2px solid #cc0000;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.3);
 }
 
 .work-logs-section {
@@ -292,4 +294,66 @@ header p {
 .stat-card p {
   font-size: 2em;
   font-weight: bold;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.4em;
+}
+
+.modal p {
+  color: #666;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.action-column {
+  text-align: center;
 }
