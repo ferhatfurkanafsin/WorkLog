@@ -1,0 +1,183 @@
+.ad-block {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ad-content {
+  width: 100%;
+  height: 100%;
+}
+
+.ad-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.ad-placeholder-content {
+  text-align: center;
+  color: #718096;
+}
+
+.ad-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  color: #a0aec0;
+}
+
+.ad-placeholder p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.btn-setup-ad {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-setup-ad:hover {
+  background: #5a67d8;
+  transform: translateY(-1px);
+}
+
+/* Ad Block Editor */
+.ad-block-editor {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+.ad-block-editor h3 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.ad-block-editor .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.ad-block-editor label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.ad-type-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.ad-code-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+}
+
+.ad-code-textarea:focus,
+.ad-type-select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn-save,
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cancel {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #d0d0d0;
+}
+
+/* Position-specific styles */
+.ad-block.ad-header {
+  margin: 0 auto 2rem;
+  max-width: 728px;
+  min-height: 90px;
+}
+
+.ad-block.ad-sidebar {
+  max-width: 300px;
+  min-height: 250px;
+}
+
+.ad-block.ad-footer {
+  margin: 2rem auto 0;
+  max-width: 728px;
+  min-height: 90px;
+}
+
+.ad-block.ad-banner {
+  width: 100%;
+  min-height: 60px;
+}
+
+/* Loading state */
+.ad-block-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ad-block.ad-header,
+  .ad-block.ad-footer {
+    max-width: 320px;
+    min-height: 100px;
+  }
+
+  .ad-block.ad-sidebar {
+    max-width: 100%;
+  }
+}

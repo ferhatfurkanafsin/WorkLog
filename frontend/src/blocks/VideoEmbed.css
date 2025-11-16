@@ -1,0 +1,113 @@
+.video-embed-block {
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.video-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+  text-align: center;
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  background: #000;
+  border-radius: 8px;
+}
+
+.video-iframe,
+.video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.video-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #fff;
+}
+
+.video-embed-editor {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.video-embed-editor h3 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.video-embed-editor .form-group {
+  margin-bottom: 1rem;
+}
+
+.video-embed-editor label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.video-url-input,
+.video-title-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.video-url-input:focus,
+.video-title-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn-edit,
+.btn-save,
+.btn-cancel {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-edit,
+.btn-save {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  margin-right: 0.5rem;
+}
+
+.btn-edit:hover,
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cancel {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #d0d0d0;
+}
