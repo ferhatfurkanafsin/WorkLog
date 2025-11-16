@@ -16,7 +16,7 @@ function WorkLogsList({ selectedEmployee, refresh }) {
   const fetchWorkLogs = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/work-logs/employee/${selectedEmployee.id}`)
+      const response = await fetch(`http://localhost:3000/api/work-logs/employee/${selectedEmployee.id}`)
       const data = await response.json()
       setWorkLogs(data.workLogs)
       calculateStats(data.workLogs)
@@ -30,7 +30,7 @@ function WorkLogsList({ selectedEmployee, refresh }) {
   const fetchAllWorkLogs = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/work-logs')
+      const response = await fetch('http://localhost:3000/api/work-logs')
       const data = await response.json()
       setWorkLogs(data.workLogs)
       calculateStats(data.workLogs)

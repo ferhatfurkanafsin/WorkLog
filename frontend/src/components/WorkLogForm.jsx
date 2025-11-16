@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
+  const { hasPermission, user } = useAuth()
   const [formData, setFormData] = useState({
     month: '',
     year: new Date().getFullYear(),
@@ -10,12 +12,29 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
   })
   const [message, setMessage] = useState({ type: '', text: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [employees, setEmployees] = useState([])
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('')
 
   useEffect(() => {
     // Set current month
     const currentMonth = new Date().toLocaleString('tr-TR', { month: 'long' })
     setFormData(prev => ({ ...prev, month: currentMonth }))
+
+    // Fetch employees for Data Entry users
+    if (user?.role === 'Data Entry') {
+      fetchEmployees()
+    }
   }, [])
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/employees')
+      const data = await response.json()
+      setEmployees(data.employees)
+    } catch (error) {
+      console.error('Error fetching employees:', error)
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -28,7 +47,10 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!selectedEmployee) {
+    // Determine employee ID based on user role
+    const employeeId = user?.role === 'Data Entry' ? selectedEmployeeId : selectedEmployee?.id
+
+    if (!employeeId) {
       setMessage({ type: 'error', text: 'Lütfen önce bir personel seçin' })
       return
     }
@@ -38,17 +60,22 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
       return
     }
 
+    if (!hasPermission('add_worklog')) {
+      setMessage({ type: 'error', text: 'Bu işlem için yetkiniz yok' })
+      return
+    }
+
     setSubmitting(true)
     setMessage({ type: '', text: '' })
 
     try {
-      const response = await fetch('/api/work-logs', {
+      const response = await fetch('http://localhost:3000/api/work-logs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          employee_id: selectedEmployee.id,
+          employee_id: employeeId,
           ...formData
         })
       })
@@ -86,16 +113,35 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
     <div className="card">
       <h2>Puantaj Kaydı Ekle</h2>
 
-      {selectedEmployee ? (
-        <div className="selected-employee-info">
-          <h3>{selectedEmployee.name} {selectedEmployee.surname}</h3>
-          <p><strong>Pozisyon:</strong> {selectedEmployee.position || '-'}</p>
-          <p><strong>Departman:</strong> {selectedEmployee.department || '-'}</p>
+      {/* Show employee selector for Data Entry users */}
+      {user?.role === 'Data Entry' ? (
+        <div className="form-group">
+          <label>Personel Seç *</label>
+          <select
+            value={selectedEmployeeId}
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+            required
+          >
+            <option value="">Bir personel seçin...</option>
+            {employees.map(emp => (
+              <option key={emp.id} value={emp.id}>
+                {emp.name} {emp.surname} - {emp.position || 'N/A'}
+              </option>
+            ))}
+          </select>
         </div>
       ) : (
-        <div className="alert alert-error">
-          Lütfen sol taraftan bir personel seçin
-        </div>
+        selectedEmployee ? (
+          <div className="selected-employee-info">
+            <h3>{selectedEmployee.name} {selectedEmployee.surname}</h3>
+            <p><strong>Pozisyon:</strong> {selectedEmployee.position || '-'}</p>
+            <p><strong>Departman:</strong> {selectedEmployee.department || '-'}</p>
+          </div>
+        ) : (
+          <div className="alert alert-error">
+            Lütfen sol taraftan bir personel seçin
+          </div>
+        )
       )}
 
       {message.text && (
@@ -175,7 +221,7 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={!selectedEmployee || submitting}
+          disabled={(user?.role === 'Data Entry' ? !selectedEmployeeId : !selectedEmployee) || submitting}
         >
           {submitting ? 'Kaydediliyor...' : 'Kaydet'}
         </button>

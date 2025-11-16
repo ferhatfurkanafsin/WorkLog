@@ -36,6 +36,18 @@ db.serialize(() => {
     )
   `);
 
+  // Users table for authentication
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL,
+      full_name TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Insert some sample employees for testing
   db.get("SELECT COUNT(*) as count FROM employees", (err, row) => {
     if (row.count === 0) {
@@ -53,6 +65,29 @@ db.serialize(() => {
       });
       stmt.finalize();
       console.log('Sample employees added to database');
+    }
+  });
+
+  // Insert default users for testing
+  db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
+    if (row.count === 0) {
+      const crypto = require('crypto');
+      const hashPassword = (password) => {
+        return crypto.createHash('sha256').update(password).digest('hex');
+      };
+
+      const defaultUsers = [
+        { username: 'admin', password: hashPassword('admin123'), role: 'Admin', full_name: 'System Administrator' },
+        { username: 'manager', password: hashPassword('manager123'), role: 'Manager', full_name: 'Department Manager' },
+        { username: 'dataentry', password: hashPassword('data123'), role: 'Data Entry', full_name: 'Data Entry User' }
+      ];
+
+      const stmt = db.prepare("INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)");
+      defaultUsers.forEach(user => {
+        stmt.run(user.username, user.password, user.role, user.full_name);
+      });
+      stmt.finalize();
+      console.log('Default users added to database');
     }
   });
 });

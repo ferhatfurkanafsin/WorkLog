@@ -1,41 +1,28 @@
-import { useState, useEffect } from 'react'
-import EmployeeSearch from './components/EmployeeSearch'
-import WorkLogForm from './components/WorkLogForm'
-import WorkLogsList from './components/WorkLogsList'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import Login from './components/Login'
+import Dashboard from './components/Dashboard'
 import './App.css'
 
-function App() {
-  const [selectedEmployee, setSelectedEmployee] = useState(null)
-  const [refreshLogs, setRefreshLogs] = useState(0)
+function AppContent() {
+  const { user, loading } = useAuth();
 
-  const handleEmployeeSelect = (employee) => {
-    setSelectedEmployee(employee)
-  }
-
-  const handleWorkLogAdded = () => {
-    setRefreshLogs(prev => prev + 1)
-  }
-
-  return (
-    <div className="container">
-      <header>
-        <h1>Personel Puantaj Sistemi</h1>
-        <p>Çalışan iş günü ve ödeme takip sistemi</p>
-      </header>
-
-      <div className="main-content">
-        <EmployeeSearch onSelectEmployee={handleEmployeeSelect} />
-        <WorkLogForm
-          selectedEmployee={selectedEmployee}
-          onWorkLogAdded={handleWorkLogAdded}
-        />
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Yükleniyor...</p>
       </div>
+    );
+  }
 
-      <WorkLogsList
-        selectedEmployee={selectedEmployee}
-        refresh={refreshLogs}
-      />
-    </div>
+  return user ? <Dashboard /> : <Login />;
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   )
 }
 
