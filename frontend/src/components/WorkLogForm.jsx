@@ -6,7 +6,10 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
     year: new Date().getFullYear(),
     days_worked: '',
     payment_amount: '',
-    notes: ''
+    notes: '',
+    is_paid: false,
+    payment_date: '',
+    payment_method: ''
   })
   const [message, setMessage] = useState({ type: '', text: '' })
   const [submitting, setSubmitting] = useState(false)
@@ -18,10 +21,10 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
   }, [])
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
   }
 
@@ -62,7 +65,10 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
           year: formData.year,
           days_worked: '',
           payment_amount: '',
-          notes: ''
+          notes: '',
+          is_paid: false,
+          payment_date: '',
+          payment_method: ''
         })
         onWorkLogAdded()
       } else {
@@ -170,6 +176,50 @@ function WorkLogForm({ selectedEmployee, onWorkLogAdded }) {
             onChange={handleChange}
             placeholder="Ek bilgiler..."
           />
+        </div>
+
+        <div className="payment-section">
+          <h3>Ödeme Bilgileri</h3>
+
+          <div className="form-group checkbox-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                name="is_paid"
+                checked={formData.is_paid}
+                onChange={handleChange}
+              />
+              <span>Ödeme Yapıldı</span>
+            </label>
+          </div>
+
+          {formData.is_paid && (
+            <>
+              <div className="form-group">
+                <label>Ödeme Tarihi</label>
+                <input
+                  type="date"
+                  name="payment_date"
+                  value={formData.payment_date}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Ödeme Yöntemi</label>
+                <select
+                  name="payment_method"
+                  value={formData.payment_method}
+                  onChange={handleChange}
+                >
+                  <option value="">Seçiniz...</option>
+                  <option value="Banka Transferi">Banka Transferi</option>
+                  <option value="Nakit">Nakit</option>
+                  <option value="Çek">Çek</option>
+                </select>
+              </div>
+            </>
+          )}
         </div>
 
         <button
